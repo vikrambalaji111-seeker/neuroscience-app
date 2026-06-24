@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import { CATEGORIES, getCategory, TOPICS_BY_ID } from './data/taxonomy.js'
 import TopicPage from './components/TopicPage.jsx'
+import Search from './components/Search.jsx'
+import { useHashRoute } from './hooks/useHashRoute.js'
 
 function TopicCard({ topic, onOpen }) {
   return (
@@ -79,13 +80,39 @@ function Home({ onOpenCategory }) {
   )
 }
 
-export default function App() {
-  // Simple state-based routing: { view: 'home'|'category'|'topic', id }
-  const [route, setRoute] = useState({ view: 'home' })
+// Resolves the current route to a view, tolerating unknown ids from a
+// hand-edited or stale URL.
+function MainView({ route, openCategory, openTopic, goHome }) {
+  if (route.view === 'category') {
+    const category = getCategory(route.id)
+    if (!category) return <NotFound goHome={goHome} />
+    return <CategoryView category={category} onOpen={openTopic} />
+  }
+  if (route.view === 'topic') {
+    const topic = TOPICS_BY_ID[route.id]
+    if (!topic) return <NotFound goHome={goHome} />
+    return <TopicPage topic={topic} onBack={() => openCategory(topic.categoryId)} />
+  }
+  return <Home onOpenCategory={openCategory} />
+}
 
-  const openCategory = (id) => setRoute({ view: 'category', id })
-  const openTopic = (id) => setRoute({ view: 'topic', id })
-  const goHome = () => setRoute({ view: 'home' })
+function NotFound({ goHome }) {
+  return (
+    <div className="category-view">
+      <h1>Not found</h1>
+      <p className="category-blurb">That page doesn’t exist.</p>
+      <button className="back" onClick={goHome}>← Home</button>
+    </div>
+  )
+}
+
+export default function App() {
+  // Hash-based routing: shareable URLs + browser back/forward support.
+  const [route, navigate] = useHashRoute()
+
+  const openCategory = (id) => navigate({ view: 'category', id })
+  const openTopic = (id) => navigate({ view: 'topic', id })
+  const goHome = () => navigate({ view: 'home' })
 
   const activeCategoryId =
     route.view === 'category'
@@ -98,6 +125,7 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <button className="brand" onClick={goHome}>🧠 Neuroscience</button>
+        <Search onOpenTopic={openTopic} />
         <nav>
           {CATEGORIES.map((c) => (
             <button
@@ -112,16 +140,12 @@ export default function App() {
       </aside>
 
       <main className="content">
-        {route.view === 'home' && <Home onOpenCategory={openCategory} />}
-        {route.view === 'category' && (
-          <CategoryView category={getCategory(route.id)} onOpen={openTopic} />
-        )}
-        {route.view === 'topic' && (
-          <TopicPage
-            topic={TOPICS_BY_ID[route.id]}
-            onBack={() => openCategory(TOPICS_BY_ID[route.id].categoryId)}
-          />
-        )}
+        <MainView
+          route={route}
+          openCategory={openCategory}
+          openTopic={openTopic}
+          goHome={goHome}
+        />
       </main>
     </div>
   )

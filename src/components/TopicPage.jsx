@@ -67,6 +67,23 @@ function Section({ label, data }) {
   )
 }
 
+// Skeleton placeholder shown while sourced content is being fetched.
+function LoadingSkeleton({ name }) {
+  return (
+    <div className="skeleton-wrap" aria-busy="true">
+      <p className="loading">Fetching sourced content for “{name}”…</p>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="topic-section">
+          <div className="sk-line sk-title" />
+          <div className="sk-line" />
+          <div className="sk-line" />
+          <div className="sk-line sk-short" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function StudyList({ status, studies, query }) {
   if (status === 'loading') return <p className="loading">Searching published literature…</p>
   if (status === 'error') return <p className="no-refs">Could not reach the literature database. Try again later.</p>
@@ -118,7 +135,7 @@ export default function TopicPage({ topic, onBack }) {
     <article className="topic-page">
       <button className="back" onClick={onBack}>← Back</button>
 
-      {status === 'loading' && <p className="loading">Fetching sourced content…</p>}
+      {status === 'loading' && <LoadingSkeleton name={topic.name} />}
       {status === 'error' && (
         <p className="no-refs">Could not load referenced content for “{topic.name}”. It may not have a matching source article.</p>
       )}

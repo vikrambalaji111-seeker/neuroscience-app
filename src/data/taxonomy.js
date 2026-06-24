@@ -166,3 +166,29 @@ for (const cat of CATEGORIES) {
 export function getCategory(id) {
   return CATEGORIES.find((c) => c.id === id)
 }
+
+// Flat list of every topic with its category label — used by the search box.
+export const ALL_TOPICS = Object.values(TOPICS_BY_ID).map((t) => ({
+  id: t.id,
+  name: t.name,
+  categoryId: t.categoryId,
+  categoryName: getCategory(t.categoryId)?.name || '',
+}))
+
+// Simple case-insensitive substring search across topic and category names.
+export function searchTopics(query, limit = 8) {
+  const q = query.trim().toLowerCase()
+  if (!q) return []
+  const scored = []
+  for (const t of ALL_TOPICS) {
+    const name = t.name.toLowerCase()
+    const cat = t.categoryName.toLowerCase()
+    let score = 0
+    if (name === q) score = 100
+    else if (name.startsWith(q)) score = 70
+    else if (name.includes(q)) score = 50
+    else if (cat.includes(q)) score = 20
+    if (score) scored.push({ ...t, score })
+  }
+  return scored.sort((a, b) => b.score - a.score).slice(0, limit)
+}

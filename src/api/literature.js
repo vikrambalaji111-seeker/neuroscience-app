@@ -17,8 +17,19 @@ function articleUrl(r) {
   return null
 }
 
+// In-memory cache, keyed by query, for instant revisits within a session.
+const studyCache = new Map()
+
 // Fetch recent + relevant studies for a query.
 export async function fetchStudies(query, { pageSize = 12 } = {}) {
+  const cacheKey = `${query}|${pageSize}`
+  if (studyCache.has(cacheKey)) return studyCache.get(cacheKey)
+  const result = await requestStudies(query, pageSize)
+  studyCache.set(cacheKey, result)
+  return result
+}
+
+async function requestStudies(query, pageSize) {
   const q = encodeURIComponent(`${query} AND (HAS_ABSTRACT:Y)`)
   const url = `${BASE}?query=${q}&format=json&pageSize=${pageSize}&sort=P_PDATE_D%20desc`
   const res = await fetch(url)

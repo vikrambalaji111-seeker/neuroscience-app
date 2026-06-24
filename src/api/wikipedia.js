@@ -83,8 +83,19 @@ async function fetchSectionText(title, index) {
   return htmlToText(html)
 }
 
+// In-memory cache so revisiting a topic in the same session is instant and
+// avoids re-hitting the APIs.
+const contentCache = new Map()
+
 // Top-level: build the full sourced page for a topic.
 export async function fetchTopicContent(title) {
+  if (contentCache.has(title)) return contentCache.get(title)
+  const result = await buildTopicContent(title)
+  contentCache.set(title, result)
+  return result
+}
+
+async function buildTopicContent(title) {
   const summary = await fetchSummary(title)
   const sections = await fetchSectionList(title)
 
