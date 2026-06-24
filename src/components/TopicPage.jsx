@@ -4,8 +4,60 @@ import { fetchStudies, fetchReviews } from '../api/literature.js'
 import { summarizeText, gatherPageText } from '../utils/summarize.js'
 import { getSiblingTopics } from '../data/taxonomy.js'
 import { referenceSources, scholarlySources } from '../data/sources.js'
+import { useAuth } from '../auth/AuthContext.jsx'
 import Videos from './Videos.jsx'
 import Sources from './Sources.jsx'
+
+// Per-topic tracking bar — Read / Save / Notes. For anonymous users it becomes
+// a gentle prompt to sign in; all reading content stays fully available.
+function TopicActions({ topicId, onSignIn }) {
+  const { user, isRead, isBookmarked, toggleRead, toggleBookmark, getNote, setNote } = useAuth()
+  const [noteOpen, setNoteOpen] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  if (!user) {
+    return (
+      <div className="topic-actions anon">
+        <span className="section-note">Sign in to mark as read, save to your list, and take private notes.</span>
+        <button className="summarize-btn" onClick={onSignIn}>Sign in</button>
+      </div>
+    )
+  }
+
+  const read = isRead(topicId)
+  const saved = isBookmarked(topicId)
+  const openNotes = () => { setDraft(getNote(topicId)); setNoteOpen((o) => !o) }
+
+  return (
+    <div className="topic-actions">
+      <div className="action-row">
+        <button className={`action-btn ${read ? 'on' : ''}`} onClick={() => toggleRead(topicId)}>
+          {read ? '✓ Read' : 'Mark as read'}
+        </button>
+        <button className={`action-btn ${saved ? 'on' : ''}`} onClick={() => toggleBookmark(topicId)}>
+          {saved ? '🔖 Saved' : 'Save'}
+        </button>
+        <button className={`action-btn ${getNote(topicId) ? 'on' : ''}`} onClick={openNotes}>
+          {getNote(topicId) ? '📝 Note' : 'Add note'}
+        </button>
+      </div>
+      {noteOpen && (
+        <div className="note-editor">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Your private notes on this topic…"
+            rows={4}
+          />
+          <div className="action-row">
+            <button className="summarize-btn" onClick={() => { setNote(topicId, draft); setNoteOpen(false) }}>Save note</button>
+            <button className="collapse-btn" onClick={() => setNoteOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Which sourced sections each reading level shows. The two levels are
 // genuinely different views of the same cited material — beginners get the
@@ -218,9 +270,10 @@ function RelatedTopics({ topicId, onOpenTopic }) {
   )
 }
 
-export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTopic }) {
+export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTopic, onSignIn }) {
   const [content, setContent] = useState(null)
   const [status, setStatus] = useState('loading')
+  const { recordVisit } = useAuth()
   const isResearcher = level === 'researcher'
   const term = topic.wiki
 
@@ -233,6 +286,9 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
       .catch(() => { if (alive) setStatus('error') })
     return () => { alive = false }
   }, [topic.id])
+
+  // Record the visit for logged-in users (history, streak, continue-reading).
+  useEffect(() => { recordVisit(topic.id) }, [topic.id, recordVisit])
 
   return (
     <article className="topic-page">
@@ -261,6 +317,8 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
               </p>
             </div>
           </header>
+
+          <TopicActions topicId={topic.id} onSignIn={onSignIn} />
 
           {isResearcher ? (
             /* ---------------- Researcher: no definition; mechanism + frontier + literature ---------------- */

@@ -13,12 +13,14 @@ export function parseHash(hash) {
   const [seg, id] = h.split('/')
   if (seg === 'c' && id) return { view: 'category', id }
   if (seg === 't' && id) return { view: 'topic', id }
+  if (seg === 'me') return { view: 'profile' }
   return { view: 'home' }
 }
 
 export function routeToHash(route) {
   if (route.view === 'category') return `#/c/${route.id}`
   if (route.view === 'topic') return `#/t/${route.id}`
+  if (route.view === 'profile') return '#/me'
   return '#/'
 }
 

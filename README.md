@@ -23,6 +23,23 @@ available”** rather than filling the gap.
 - **Lectures & videos** — YouTube, verified via oEmbed and ranked by an
   authenticity-tier system (academic institutions first). See `src/api/youtube.js`.
 
+## Accounts & progress tracking
+
+Everything in the app is free for everyone — anonymous users get all content.
+Signing in (sidebar) only adds personalisation, tracked locally in the browser:
+
+- Mark topics as read, save a reading list, and keep private notes (per topic).
+- A progress dashboard (`#/me`): topics read, % complete, daily streak,
+  per-category completion bars, milestones/achievements, continue-reading, and
+  recent history.
+
+Auth is **local-first** (`src/auth/AuthContext.jsx`): accounts and progress
+persist in `localStorage`, scoped per account. Sign in with email or a social
+provider (Google, Facebook, Instagram, Substack, X, Apple) — social sign-in is
+simulated locally and routes through a single `signIn(email, name, provider)`
+entry point, so wiring real OAuth later is a drop-in replacement (it needs
+provider credentials + a backend, which a static client-only app can't hold).
+
 ## Two reading levels (genuinely different content)
 
 The Beginner/Researcher toggle is not cosmetic — each level renders a different

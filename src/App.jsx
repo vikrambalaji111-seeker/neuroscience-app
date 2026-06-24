@@ -3,6 +3,9 @@ import { CATEGORIES, getCategory, TOPICS_BY_ID } from './data/taxonomy.js'
 import TopicPage from './components/TopicPage.jsx'
 import Search from './components/Search.jsx'
 import Videos from './components/Videos.jsx'
+import Profile from './components/Profile.jsx'
+import AuthModal from './components/AuthModal.jsx'
+import { useAuth } from './auth/AuthContext.jsx'
 import { useHashRoute } from './hooks/useHashRoute.js'
 
 function TopicCard({ topic, onOpen }) {
@@ -98,7 +101,7 @@ function Home({ onOpenCategory }) {
 
 // Resolves the current route to a view, tolerating unknown ids from a
 // hand-edited or stale URL.
-function MainView({ route, openCategory, openTopic, goHome, level }) {
+function MainView({ route, openCategory, openTopic, goHome, level, onSignIn }) {
   if (route.view === 'category') {
     const category = getCategory(route.id)
     if (!category) return <NotFound goHome={goHome} />
@@ -113,10 +116,37 @@ function MainView({ route, openCategory, openTopic, goHome, level }) {
         level={level}
         onBack={() => openCategory(topic.categoryId)}
         onOpenTopic={openTopic}
+        onSignIn={onSignIn}
       />
     )
   }
+  if (route.view === 'profile') {
+    return <Profile onOpenTopic={openTopic} onOpenCategory={openCategory} onSignIn={onSignIn} />
+  }
   return <Home onOpenCategory={openCategory} />
+}
+
+// Sidebar account area — sign-in prompt for anonymous users, or a chip linking
+// to the progress dashboard for logged-in users.
+function AccountBox({ onSignIn, onOpenProfile }) {
+  const { user } = useAuth()
+  if (!user) {
+    return (
+      <button className="account-box signin" onClick={onSignIn}>
+        <span className="account-cta">Sign in / Sign up</span>
+        <span className="account-sub">Track progress &amp; save topics</span>
+      </button>
+    )
+  }
+  return (
+    <button className="account-box" onClick={onOpenProfile}>
+      <span className="avatar sm">{(user.name || user.email)[0].toUpperCase()}</span>
+      <span className="account-info">
+        <span className="account-name">{user.name}</span>
+        <span className="account-sub">My progress →</span>
+      </span>
+    </button>
+  )
 }
 
 // Beginner vs Researcher reading level. This does NOT rewrite any content
@@ -164,9 +194,12 @@ export default function App() {
   )
   const setLevel = (l) => { setLevelState(l); localStorage.setItem('ns-level', l) }
 
+  const [showAuth, setShowAuth] = useState(false)
+
   const openCategory = (id) => navigate({ view: 'category', id })
   const openTopic = (id) => navigate({ view: 'topic', id })
   const goHome = () => navigate({ view: 'home' })
+  const openProfile = () => navigate({ view: 'profile' })
 
   const activeCategoryId =
     route.view === 'category'
@@ -179,6 +212,7 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <button className="brand" onClick={goHome}>🧠 Neuroscience</button>
+        <AccountBox onSignIn={() => setShowAuth(true)} onOpenProfile={openProfile} />
         <Search onOpenTopic={openTopic} />
         <LevelToggle level={level} setLevel={setLevel} />
         <nav>
@@ -201,8 +235,11 @@ export default function App() {
           openTopic={openTopic}
           goHome={goHome}
           level={level}
+          onSignIn={() => setShowAuth(true)}
         />
       </main>
+
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </div>
   )
 }
