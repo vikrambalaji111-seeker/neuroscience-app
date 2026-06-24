@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git --version)",
+      "Bash(npm --version)",
+      "Bash(brew --version)",
+      "Bash(gh --version)",
+      "Bash(claude --version)",
+      "Bash(xcode-select -p)",
+      "Bash(git config *)"
+    ]
+  }
+}
