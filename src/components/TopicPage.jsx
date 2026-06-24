@@ -1,21 +1,33 @@
 import { useEffect, useState } from 'react'
-import { fetchTopicContent, SECTION_ORDER } from '../api/wikipedia.js'
+import { fetchTopicContent } from '../api/wikipedia.js'
 import { fetchStudies } from '../api/literature.js'
 import { summarizeText, gatherPageText } from '../utils/summarize.js'
 import { getSiblingTopics } from '../data/taxonomy.js'
+import { referenceSources, scholarlySources } from '../data/sources.js'
 import Videos from './Videos.jsx'
+import Sources from './Sources.jsx'
 
-// On-demand summary panel. Runs ONLY when the user clicks; produces an
-// extractive summary (sentences taken verbatim from the sourced text on this
-// page). It never generates or rephrases content.
+// Which sourced sections each reading level shows. The two levels are
+// genuinely different views of the same cited material — beginners get the
+// foundational/encyclopedic sections; researchers get mechanism, challenge and
+// frontier sections (and, crucially, no basic definition).
+const BEGINNER_SECTIONS = [
+  { key: 'brainSignature', label: 'What it looks like in the brain' },
+  { key: 'history', label: 'History & discovery' },
+  { key: 'treatments', label: 'Treatments & interventions' },
+]
+const RESEARCHER_SECTIONS = [
+  { key: 'whatWeLearned', label: 'Mechanisms & what we have learned' },
+  { key: 'brainSignature', label: 'Neural substrate & pathophysiology' },
+  { key: 'currentChallenges', label: 'Current challenges' },
+  { key: 'openQuestions', label: 'Open questions & ongoing research' },
+]
+
+// On-demand extractive summary (beginner only). Selects sentences verbatim from
+// the sourced text on the page — never generates or rephrases content.
 function SummaryPanel({ content }) {
   const [summary, setSummary] = useState(null)
-
-  const run = () => {
-    const text = gatherPageText(content)
-    setSummary(summarizeText(text, 5) || '')
-  }
-
+  const run = () => setSummary(summarizeText(gatherPageText(content), 5) || '')
   return (
     <section className="topic-section summary-box">
       <div className="summary-head">
@@ -26,15 +38,13 @@ function SummaryPanel({ content }) {
       </div>
       {summary === null ? (
         <p className="section-note">
-          Generates an extractive summary on request — the key sentences pulled
+          Generates an extractive summary on request — key sentences pulled
           verbatim from the sourced text below. No new text is written.
         </p>
       ) : summary ? (
         <>
           <p className="summary-text">{summary}</p>
-          <p className="section-note">
-            Sentences selected verbatim from the cited content on this page.
-          </p>
+          <p className="section-note">Sentences selected verbatim from the cited content on this page.</p>
         </>
       ) : (
         <p className="no-refs">Not enough sourced text on this page to summarize.</p>
@@ -43,8 +53,7 @@ function SummaryPanel({ content }) {
   )
 }
 
-// A single sourced section. If there is no sourced content, we say so plainly
-// rather than inventing anything.
+// A single sourced section. If there is no sourced content, say so plainly.
 function Section({ label, data }) {
   if (!data || !data.text) {
     return (
@@ -57,9 +66,7 @@ function Section({ label, data }) {
   return (
     <section className="topic-section">
       <h3>{label}</h3>
-      {data.text.split('\n\n').map((p, i) => (
-        <p key={i}>{p}</p>
-      ))}
+      {data.text.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
       {data.anchor && (
         <a className="src-link" href={data.anchor} target="_blank" rel="noreferrer">
           Source: Wikipedia — “{data.heading}” ↗
@@ -69,7 +76,6 @@ function Section({ label, data }) {
   )
 }
 
-// Skeleton placeholder shown while sourced content is being fetched.
 function LoadingSkeleton({ name }) {
   return (
     <div className="skeleton-wrap" aria-busy="true">
@@ -86,30 +92,56 @@ function LoadingSkeleton({ name }) {
   )
 }
 
-function StudyList({ status, studies, query }) {
-  if (status === 'loading') return <p className="loading">Searching published literature…</p>
-  if (status === 'error') return <p className="no-refs">Could not reach the literature database. Try again later.</p>
-  if (!studies.length) return <p className="no-refs">No referenced studies found for this topic.</p>
+// Topic-specific studies (researcher view). Title-matched in the API layer, so
+// results are primarily about this topic. Sortable by recency or citations.
+function ResearcherStudies({ term, fallbackQuery }) {
+  const [studies, setStudies] = useState([])
+  const [status, setStatus] = useState('loading')
+  const [sort, setSort] = useState('recent')
+
+  useEffect(() => {
+    let alive = true
+    setStatus('loading')
+    fetchStudies(term, fallbackQuery, { sort })
+      .then((s) => { if (alive) { setStudies(s); setStatus('ready') } })
+      .catch(() => { if (alive) setStatus('error') })
+    return () => { alive = false }
+  }, [term, fallbackQuery, sort])
+
   return (
-    <ul className="study-list">
-      {studies.map((s) => (
-        <li key={s.id} className="study">
-          <a href={s.url} target="_blank" rel="noreferrer" className="study-title">
-            {s.title}
-          </a>
-          <div className="study-meta">
-            <span className="authors">{s.authors}</span>
-            {s.journal && <span> · {s.journal}</span>}
-            {s.year && <span> · {s.year}</span>}
-            {s.citedBy != null && <span> · cited by {s.citedBy}</span>}
-          </div>
-        </li>
-      ))}
-    </ul>
+    <section className="topic-section">
+      <div className="summary-head">
+        <h3>Recent studies on {term}</h3>
+        <div className="sort-toggle">
+          <button className={sort === 'recent' ? 'active' : ''} onClick={() => setSort('recent')}>Newest</button>
+          <button className={sort === 'cited' ? 'active' : ''} onClick={() => setSort('cited')}>Most cited</button>
+        </div>
+      </div>
+      <p className="section-note">
+        Peer-reviewed papers from Europe PMC whose title is about {term} — primary literature, not passing mentions.
+      </p>
+      {status === 'loading' && <p className="loading">Searching published literature…</p>}
+      {status === 'error' && <p className="no-refs">Could not reach the literature database. Try again later.</p>}
+      {status === 'ready' && !studies.length && <p className="no-refs">No referenced studies found for this topic.</p>}
+      {status === 'ready' && studies.length > 0 && (
+        <ul className="study-list">
+          {studies.map((s) => (
+            <li key={s.id} className="study">
+              <a href={s.url} target="_blank" rel="noreferrer" className="study-title">{s.title}</a>
+              <div className="study-meta">
+                <span className="authors">{s.authors}</span>
+                {s.journal && <span> · {s.journal}</span>}
+                {s.year && <span> · {s.year}</span>}
+                {s.citedBy != null && <span> · cited by {s.citedBy}</span>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 
-// Related topics from the same category (structural, not generated).
 function RelatedTopics({ topicId, onOpenTopic }) {
   const siblings = getSiblingTopics(topicId)
   if (!siblings.length) return null
@@ -119,31 +151,9 @@ function RelatedTopics({ topicId, onOpenTopic }) {
       <p className="section-note">More in {siblings[0].categoryName}.</p>
       <div className="related-chips">
         {siblings.map((t) => (
-          <button key={t.id} className="related-chip" onClick={() => onOpenTopic(t.id)}>
-            {t.name}
-          </button>
+          <button key={t.id} className="related-chip" onClick={() => onOpenTopic(t.id)}>{t.name}</button>
         ))}
       </div>
-    </section>
-  )
-}
-
-// Studies layer. Collapsed by default for beginners (the technical/frontier
-// material), expanded up front for researchers.
-function StudiesSection({ studyStatus, studies, query, level }) {
-  const [open, setOpen] = useState(level === 'researcher')
-  useEffect(() => { setOpen(level === 'researcher') }, [level])
-
-  return (
-    <section className="topic-section">
-      <div className="summary-head">
-        <h3>Studies, experiments &amp; the scientists behind them</h3>
-        <button className="collapse-btn" onClick={() => setOpen((o) => !o)}>
-          {open ? 'Hide' : `Show${studies.length ? ` (${studies.length})` : ''}`}
-        </button>
-      </div>
-      <p className="section-note">Recent peer-reviewed publications from Europe PMC, newest first.</p>
-      {open && <StudyList status={studyStatus} studies={studies} query={query} />}
     </section>
   )
 }
@@ -151,24 +161,16 @@ function StudiesSection({ studyStatus, studies, query, level }) {
 export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTopic }) {
   const [content, setContent] = useState(null)
   const [status, setStatus] = useState('loading')
-  const [studies, setStudies] = useState([])
-  const [studyStatus, setStudyStatus] = useState('loading')
+  const isResearcher = level === 'researcher'
+  const term = topic.wiki
 
   useEffect(() => {
     let alive = true
     setStatus('loading')
-    setStudyStatus('loading')
     setContent(null)
-    setStudies([])
-
     fetchTopicContent(topic.wiki)
       .then((c) => { if (alive) { setContent(c); setStatus('ready') } })
       .catch(() => { if (alive) setStatus('error') })
-
-    fetchStudies(topic.query)
-      .then((s) => { if (alive) { setStudies(s); setStudyStatus('ready') } })
-      .catch(() => { if (alive) setStudyStatus('error') })
-
     return () => { alive = false }
   }, [topic.id])
 
@@ -189,6 +191,9 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
             )}
             <div>
               <h1>{content.title}</h1>
+              <p className={`level-pill level-${level}`}>
+                {isResearcher ? 'Researcher view — mechanisms, frontier & primary literature' : 'Beginner view — foundations & plain-language explanations'}
+              </p>
               <p className="attribution">
                 Content fetched live from{' '}
                 <a href={content.pageUrl} target="_blank" rel="noreferrer">{content.source}</a>.
@@ -197,37 +202,52 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
             </div>
           </header>
 
-          {/* On-demand summary (extractive, verbatim from sourced text) */}
-          <SummaryPanel content={content} />
+          {isResearcher ? (
+            /* ---------------- Researcher: no definition; mechanism + frontier + literature ---------------- */
+            <>
+              {RESEARCHER_SECTIONS.map((s) => (
+                <Section key={s.key} label={s.label} data={content.sections[s.key]} />
+              ))}
 
-          {/* Overview */}
-          <section className="topic-section">
-            <h3>Overview</h3>
-            {content.overview.text
-              ? content.overview.text.split('\n\n').map((p, i) => <p key={i}>{p}</p>)
-              : <p className="no-refs">No overview available.</p>}
-            <a className="src-link" href={content.pageUrl} target="_blank" rel="noreferrer">
-              Source: Wikipedia article ↗
-            </a>
-          </section>
+              <ResearcherStudies term={term} fallbackQuery={topic.query} />
 
-          {/* Mapped sections, always in a fixed order; missing => "no references". */}
-          {SECTION_ORDER.filter((s) => s.key !== 'overview').map((s) => (
-            <Section key={s.key} label={s.label} data={content.sections[s.key]} />
-          ))}
+              <Videos id={topic.id} query={topic.query} level={level} heading="Academic lectures & talks" />
 
-          {/* Studies & experiments layer (collapsible by reading level) */}
-          <StudiesSection
-            studyStatus={studyStatus}
-            studies={studies}
-            query={topic.query}
-            level={level}
-          />
+              <Sources
+                heading="Primary literature & scholarly sources"
+                note={`Search ${term} across major scholarly databases.`}
+                sources={scholarlySources(term)}
+              />
+            </>
+          ) : (
+            /* ---------------- Beginner: definition + foundations + explainers ---------------- */
+            <>
+              <SummaryPanel content={content} />
 
-          {/* Lectures & videos (verified seeds + ranked API results) */}
-          <Videos id={topic.id} query={topic.query} />
+              <section className="topic-section">
+                <h3>Overview</h3>
+                {content.overview.text
+                  ? content.overview.text.split('\n\n').map((p, i) => <p key={i}>{p}</p>)
+                  : <p className="no-refs">No overview available.</p>}
+                <a className="src-link" href={content.pageUrl} target="_blank" rel="noreferrer">
+                  Source: Wikipedia article ↗
+                </a>
+              </section>
 
-          {/* Related topics from the same category */}
+              {BEGINNER_SECTIONS.map((s) => (
+                <Section key={s.key} label={s.label} data={content.sections[s.key]} />
+              ))}
+
+              <Videos id={topic.id} query={topic.query} level={level} heading="Intro videos & explainers" />
+
+              <Sources
+                heading="Read this topic elsewhere"
+                note={`The same topic from other trusted references — not just Wikipedia. Searches ${term}.`}
+                sources={referenceSources(term)}
+              />
+            </>
+          )}
+
           {onOpenTopic && <RelatedTopics topicId={topic.id} onOpenTopic={onOpenTopic} />}
         </>
       )}

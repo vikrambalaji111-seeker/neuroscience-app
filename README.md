@@ -13,13 +13,36 @@ available”** rather than filling the gap.
 - **Article text** — English **Wikipedia** (REST + Action API), shown verbatim
   with a link back to the exact source section. Wikipedia text is CC BY-SA;
   attribution is surfaced on every page.
-- **Studies & experiments** — **Europe PMC** API: real peer-reviewed papers
-  with authors, journal, year, and a link to the source.
+- **Studies & experiments** — **Europe PMC** API: real peer-reviewed papers,
+  **title-matched** to the topic so a page about the hypothalamus returns papers
+  primarily about the hypothalamus, not passing mentions.
+- **Other references** — per-topic deep links into **Britannica, Scholarpedia,
+  BrainFacts, NCBI Bookshelf, MedlinePlus, Khan Academy** (beginner) and
+  **PubMed, Europe PMC, Google Scholar, Semantic Scholar, bioRxiv, Nature**
+  (researcher). See `src/data/sources.js`.
+- **Lectures & videos** — YouTube, verified via oEmbed and ranked by an
+  authenticity-tier system (academic institutions first). See `src/api/youtube.js`.
+
+## Two reading levels (genuinely different content)
+
+The Beginner/Researcher toggle is not cosmetic — each level renders a different
+set of sourced sections:
+
+- **Beginner** — Overview/definition, "what it looks like in the brain",
+  history, treatments, intro videos, and encyclopedic reference links. Plus an
+  on-demand extractive summary.
+- **Researcher** — *no definition*; instead mechanisms, neural substrate &
+  pathophysiology, current challenges, open questions, topic-matched recent
+  studies (sortable by recency or citations), academic lectures, and scholarly
+  literature links.
 
 ## Structure
 
-Six primary browse categories (see `src/data/taxonomy.js`):
+Seven browse categories (see `src/data/taxonomy.js`):
 
+0. **Neuroscience 101** *(featured)* — a foundational tour of the human brain in
+   6 groups (cellular neurobiology → neuroanatomy → sensory → motor → higher
+   cognition → plasticity & disorders).
 1. **Anatomy / Structure** — 20 topics (cortex, limbic system, basal ganglia, …)
 2. **Level of Analysis / Scale** — the classic spine: molecular → cellular →
    synaptic → circuit → systems → cognitive → behavioural → social

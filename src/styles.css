@@ -256,7 +256,52 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
 
 .topic-head { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 22px; }
 .topic-thumb { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+.level-pill {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin: 4px 0 0;
+}
+.level-pill.level-beginner { background: #1f6f43; color: #d6ffe6; }
+.level-pill.level-researcher { background: #3a4a7a; color: #dde6ff; }
 .attribution { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+
+/* Study sort toggle */
+.sort-toggle { display: flex; gap: 4px; flex-shrink: 0; }
+.sort-toggle button {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 5px 11px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sort-toggle button.active { background: var(--accent); color: #0f1115; font-weight: 600; border-color: var(--accent); }
+
+/* External source cards */
+.source-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.source-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: border-color .15s, background .15s;
+}
+.source-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.source-name { color: var(--text); font-size: 14px; font-weight: 600; }
+.source-type { color: var(--muted); font-size: 12px; }
 .attribution a { color: var(--accent); }
 
 .topic-section {

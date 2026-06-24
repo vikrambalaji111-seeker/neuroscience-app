@@ -5,6 +5,11 @@
 // a real publication record returned by the Europe PMC REST API, shown with
 // authors, journal, year, and a link to the source. Nothing is fabricated.
 //
+// Topic precision: we search the TITLE field for the topic's core term, so a
+// page about the hypothalamus returns papers that are *primarily* about the
+// hypothalamus — not ones that merely mention it. If a strict title search is
+// too sparse, we top up with a broader query so the section is never empty.
+//
 // API docs: https://europepmc.org/RestfulWebService  (CORS-enabled)
 // ---------------------------------------------------------------------------
 
@@ -17,35 +22,56 @@ function articleUrl(r) {
   return null
 }
 
-// In-memory cache, keyed by query, for instant revisits within a session.
-const studyCache = new Map()
-
-// Fetch recent + relevant studies for a query.
-export async function fetchStudies(query, { pageSize = 12 } = {}) {
-  const cacheKey = `${query}|${pageSize}`
-  if (studyCache.has(cacheKey)) return studyCache.get(cacheKey)
-  const result = await requestStudies(query, pageSize)
-  studyCache.set(cacheKey, result)
-  return result
+// Drop a parenthetical qualifier so e.g. "Glutamate (neurotransmitter)" becomes
+// a clean title term "Glutamate".
+function coreTerm(term) {
+  return term.replace(/\s*\([^)]*\)/g, '').trim()
 }
 
-async function requestStudies(query, pageSize) {
-  const q = encodeURIComponent(`${query} AND (HAS_ABSTRACT:Y)`)
-  const url = `${BASE}?query=${q}&format=json&pageSize=${pageSize}&sort=P_PDATE_D%20desc`
+function mapResult(r) {
+  return {
+    id: r.id,
+    title: r.title.replace(/\.$/, ''),
+    authors: r.authorString || 'Authors not listed',
+    journal: r.journalTitle || r.bookOrReportDetails?.publisher || '',
+    year: r.pubYear || '',
+    citedBy: r.citedByCount ?? null,
+    url: articleUrl(r),
+    source: r.source,
+  }
+}
+
+async function request(query, pageSize, sort) {
+  const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : ''
+  const url = `${BASE}?query=${encodeURIComponent(query)}&format=json&pageSize=${pageSize}${sortParam}`
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Europe PMC ${res.status}`)
   const data = await res.json()
-  const results = data.resultList?.result || []
+  return (data.resultList?.result || []).filter((r) => r.title).map(mapResult)
+}
+
+// In-memory cache for instant revisits within a session.
+const studyCache = new Map()
+
+// Fetch topic-specific studies. `term` is the precise concept (e.g. the
+// Wikipedia title); `fallbackQuery` is the broader search used only to top up
+// sparse results. `sort` is 'recent' (default) or 'cited'.
+export async function fetchStudies(term, fallbackQuery, { pageSize = 12, sort = 'recent' } = {}) {
+  const t = coreTerm(term)
+  const sortKey = sort === 'cited' ? 'CITED desc' : 'P_PDATE_D desc'
+  const cacheKey = `${t}|${pageSize}|${sortKey}`
+  if (studyCache.has(cacheKey)) return studyCache.get(cacheKey)
+
+  // Primary: title must contain the term -> paper is primarily about it.
+  let results = await request(`(TITLE:"${t}") AND (HAS_ABSTRACT:Y)`, pageSize, sortKey)
+
+  // Top up only if the strict search is sparse.
+  if (results.length < 4 && fallbackQuery) {
+    const seen = new Set(results.map((r) => r.id))
+    const extra = await request(`(${fallbackQuery}) AND (HAS_ABSTRACT:Y)`, pageSize, sortKey)
+    results = [...results, ...extra.filter((r) => !seen.has(r.id))].slice(0, pageSize)
+  }
+
+  studyCache.set(cacheKey, results)
   return results
-    .filter((r) => r.title)
-    .map((r) => ({
-      id: r.id,
-      title: r.title.replace(/\.$/, ''),
-      authors: r.authorString || 'Authors not listed',
-      journal: r.journalTitle || r.bookOrReportDetails?.publisher || '',
-      year: r.pubYear || '',
-      citedBy: r.citedByCount ?? null,
-      url: articleUrl(r),
-      source: r.source,
-    }))
 }

@@ -39,7 +39,7 @@ function VideoCard({ video }) {
 // Videos section for a topic (or the Neuroscience 101 landing). Combines
 // verified seeds with live API results (when a key is configured), ranked by
 // authenticity. Always offers trusted-channel search links.
-export default function Videos({ id, query, heading = 'Lectures & videos' }) {
+export default function Videos({ id, query, heading = 'Lectures & videos', level = 'beginner' }) {
   const [videos, setVideos] = useState([])
   const [status, setStatus] = useState('loading')
 
@@ -57,13 +57,19 @@ export default function Videos({ id, query, heading = 'Lectures & videos' }) {
       if (!alive) return
       // Merge, de-dupe by id (seeds win), keep authenticity order.
       const seen = new Set(seeds.map((v) => v.id))
-      const merged = [...seeds, ...api.videos.filter((v) => !seen.has(v.id))]
+      let merged = [...seeds, ...api.videos.filter((v) => !seen.has(v.id))]
+      // Researchers want academic/educator content — drop Tier 3 when there are
+      // enough higher-authenticity options.
+      if (level === 'researcher') {
+        const higher = merged.filter((v) => v.tier <= 2)
+        if (higher.length >= 2) merged = higher
+      }
       setVideos(merged)
       setStatus('ready')
     }
     load().catch(() => { if (alive) setStatus('error') })
     return () => { alive = false }
-  }, [id, query])
+  }, [id, query, level])
 
   const links = query ? trustedSearchLinks(query) : []
 

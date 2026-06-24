@@ -83,9 +83,14 @@ function Home({ onOpenCategory }) {
         ))}
       </div>
       <p className="sources-note">
-        Sources: article text from <strong>Wikipedia</strong> (CC BY-SA);
-        studies from <strong>Europe PMC</strong>. Where a source has no matching
-        content, the app shows “no references” rather than filling the gap.
+        Two reading levels: <strong>Beginner</strong> (definitions &amp;
+        foundations) and <strong>Researcher</strong> (mechanisms, open questions
+        &amp; primary literature). Article text from <strong>Wikipedia</strong>
+        (CC BY-SA); topic-matched studies from <strong>Europe PMC</strong>;
+        deep links to <strong>Britannica, Scholarpedia, PubMed, Google Scholar,
+        bioRxiv, Nature</strong> and more; authenticity-ranked lectures from
+        YouTube. Where a source has no matching content, the app shows “no
+        references” rather than filling the gap.
       </p>
     </div>
   )
