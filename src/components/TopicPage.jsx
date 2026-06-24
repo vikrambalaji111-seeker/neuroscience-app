@@ -3,6 +3,7 @@ import { fetchTopicContent, SECTION_ORDER } from '../api/wikipedia.js'
 import { fetchStudies } from '../api/literature.js'
 import { summarizeText, gatherPageText } from '../utils/summarize.js'
 import { getSiblingTopics } from '../data/taxonomy.js'
+import Videos from './Videos.jsx'
 
 // On-demand summary panel. Runs ONLY when the user clicks; produces an
 // extractive summary (sentences taken verbatim from the sourced text on this
@@ -222,6 +223,9 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
             query={topic.query}
             level={level}
           />
+
+          {/* Lectures & videos (verified seeds + ranked API results) */}
+          <Videos id={topic.id} query={topic.query} />
 
           {/* Related topics from the same category */}
           {onOpenTopic && <RelatedTopics topicId={topic.id} onOpenTopic={onOpenTopic} />}

@@ -12,6 +12,66 @@
 
 export const CATEGORIES = [
   {
+    id: 'ns101',
+    name: 'Neuroscience 101',
+    blurb:
+      'Start here. A foundational tour of the human brain and how it works — from single cells up to memory, emotion, and plasticity.',
+    layout: 'groups',
+    featured: true,
+    groups: [
+      {
+        name: '1 · Cellular Neurobiology',
+        topics: [
+          { id: 'ns101-neurons-glia', name: 'Neurons & glia', wiki: 'Neuron', query: 'neurons glia nervous system' },
+          { id: 'ns101-action-potential', name: 'Action potentials', wiki: 'Action potential', query: 'action potential ion channels' },
+          { id: 'ns101-synaptic-transmission', name: 'Synaptic transmission', wiki: 'Neurotransmission', query: 'synaptic transmission neurotransmitters' },
+        ],
+      },
+      {
+        name: '2 · Neuroanatomy',
+        topics: [
+          { id: 'ns101-cns-pns', name: 'Central & peripheral nervous system', wiki: 'Central nervous system', query: 'central peripheral nervous system' },
+          { id: 'ns101-lobes', name: 'The major lobes', wiki: 'Lobes of the brain', query: 'frontal parietal temporal occipital lobe' },
+          { id: 'ns101-deep-structures', name: 'Deep brain structures', wiki: 'Limbic system', query: 'limbic system basal ganglia brainstem' },
+        ],
+      },
+      {
+        name: '3 · Sensory Systems',
+        topics: [
+          { id: 'ns101-vision', name: 'Vision', wiki: 'Visual system', query: 'visual system retina' },
+          { id: 'ns101-audition', name: 'Audition', wiki: 'Auditory system', query: 'auditory system cochlea' },
+          { id: 'ns101-somatosensation', name: 'Somatosensation', wiki: 'Somatosensory system', query: 'somatosensory system skin receptors' },
+          { id: 'ns101-receptive-fields', name: 'Sensory processing & receptive fields', wiki: 'Receptive field', query: 'receptive field sensory processing' },
+        ],
+      },
+      {
+        name: '4 · Motor Systems',
+        topics: [
+          { id: 'ns101-motor-cortex', name: 'Voluntary movement & the motor cortex', wiki: 'Motor cortex', query: 'motor cortex voluntary movement' },
+          { id: 'ns101-cerebellum', name: 'The cerebellum', wiki: 'Cerebellum', query: 'cerebellum motor coordination balance' },
+        ],
+      },
+      {
+        name: '5 · Higher Cognitive Functions',
+        topics: [
+          { id: 'ns101-memory', name: 'Learning & memory', wiki: 'Memory', query: 'learning memory hippocampus' },
+          { id: 'ns101-ltp', name: 'Synaptic plasticity & LTP', wiki: 'Long-term potentiation', query: 'long-term potentiation synaptic plasticity' },
+          { id: 'ns101-emotion-motivation', name: 'Emotion & motivation', wiki: 'Emotion', query: 'emotion amygdala motivation' },
+          { id: 'ns101-homeostasis', name: 'Homeostasis & drives', wiki: 'Hypothalamus', query: 'hypothalamus homeostasis hunger' },
+        ],
+      },
+      {
+        name: '6 · Neuroplasticity & Disorders',
+        topics: [
+          { id: 'ns101-neuroplasticity', name: 'Neuroplasticity', wiki: 'Neuroplasticity', query: 'neuroplasticity brain reorganization' },
+          { id: 'ns101-neurodegeneration', name: 'Neurodegenerative disease', wiki: 'Neurodegeneration', query: 'neurodegenerative disease' },
+          { id: 'ns101-addiction', name: 'Psychiatric & addiction disorders', wiki: 'Addiction', query: 'addiction brain reward' },
+        ],
+      },
+    ],
+  },
+
+  {
     id: 'anatomy',
     name: 'Anatomy / Structure',
     blurb:

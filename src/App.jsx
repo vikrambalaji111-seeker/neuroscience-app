@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CATEGORIES, getCategory, TOPICS_BY_ID } from './data/taxonomy.js'
 import TopicPage from './components/TopicPage.jsx'
 import Search from './components/Search.jsx'
+import Videos from './components/Videos.jsx'
 import { useHashRoute } from './hooks/useHashRoute.js'
 
 function TopicCard({ topic, onOpen }) {
@@ -33,6 +34,10 @@ function CategoryView({ category, onOpen }) {
     <div className="category-view">
       <h1>{category.name}</h1>
       <p className="category-blurb">{category.blurb}</p>
+
+      {category.featured && (
+        <Videos id={category.id} query="human brain introduction neuroscience" heading="Start here — foundational videos" />
+      )}
 
       {category.layout === 'spine' && <Spine category={category} onOpen={onOpen} />}
 
@@ -66,7 +71,12 @@ function Home({ onOpenCategory }) {
       </p>
       <div className="cat-grid">
         {CATEGORIES.map((c) => (
-          <button key={c.id} className="cat-card" onClick={() => onOpenCategory(c.id)}>
+          <button
+            key={c.id}
+            className={`cat-card ${c.featured ? 'featured' : ''}`}
+            onClick={() => onOpenCategory(c.id)}
+          >
+            {c.featured && <span className="featured-tag">Start here</span>}
             <h2>{c.name}</h2>
             <p>{c.blurb}</p>
           </button>
