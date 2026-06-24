@@ -118,14 +118,17 @@ export async function searchVideos(query, { max = 8 } = {}) {
   return { configured: true, videos }
 }
 
-// Honest keyless fallback: searches scoped to trusted institutional channels.
+// Honest keyless fallback: searches scoped to trusted YouTube channels that
+// genuinely publish neuroscience content. Each handle is verified to exist.
 export function trustedSearchLinks(query) {
   const q = encodeURIComponent(query)
   return [
     { name: 'MIT OpenCourseWare', url: `https://www.youtube.com/@mitocw/search?query=${q}` },
     { name: 'Stanford', url: `https://www.youtube.com/@stanford/search?query=${q}` },
     { name: 'HHMI BioInteractive', url: `https://www.youtube.com/@biointeractive/search?query=${q}` },
+    { name: 'Allen Institute', url: `https://www.youtube.com/@AllenInstitute/search?query=${q}` },
     { name: 'Khan Academy', url: `https://www.youtube.com/@khanacademymedicine/search?query=${q}` },
-    { name: 'NIH', url: `https://www.youtube.com/@NIHOD/search?query=${q}` },
+    { name: 'TED-Ed', url: `https://www.youtube.com/@TEDEd/search?query=${q}` },
+    { name: 'Neuro Transmissions', url: `https://www.youtube.com/@NeuroTransmissions/search?query=${q}` },
   ]
 }
