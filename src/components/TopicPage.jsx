@@ -7,6 +7,7 @@ import { referenceSources, scholarlySources } from '../data/sources.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Videos from './Videos.jsx'
 import Sources from './Sources.jsx'
+import Discussions from './Discussions.jsx'
 
 // Per-topic tracking bar — Read / Save / Notes. For anonymous users it becomes
 // a gentle prompt to sign in; all reading content stays fully available.
@@ -367,6 +368,8 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
               />
             </>
           )}
+
+          <Discussions topicId={topic.id} onSignIn={onSignIn} />
 
           {onOpenTopic && <RelatedTopics topicId={topic.id} onOpenTopic={onOpenTopic} />}
         </>

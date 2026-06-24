@@ -23,22 +23,45 @@ available”** rather than filling the gap.
 - **Lectures & videos** — YouTube, verified via oEmbed and ranked by an
   authenticity-tier system (academic institutions first). See `src/api/youtube.js`.
 
-## Accounts & progress tracking
+## Community backend (accounts, sync, discussions)
 
-Everything in the app is free for everyone — anonymous users get all content.
-Signing in (sidebar) only adds personalisation, tracked locally in the browser:
+Everything in the app is free for everyone — anonymous users get all content and
+can read every discussion. An account adds personalisation and the community.
 
-- Mark topics as read, save a reading list, and keep private notes (per topic).
-- A progress dashboard (`#/me`): topics read, % complete, daily streak,
-  per-category completion bars, milestones/achievements, continue-reading, and
-  recent history.
+A real backend lives in [`server/`](server/) — **Express + SQLite** (Node's
+built-in `node:sqlite`, zero native deps):
 
-Auth is **local-first** (`src/auth/AuthContext.jsx`): accounts and progress
-persist in `localStorage`, scoped per account. Sign in with email or a social
-provider (Google, Facebook, Instagram, Substack, X, Apple) — social sign-in is
-simulated locally and routes through a single `signIn(email, name, provider)`
-entry point, so wiring real OAuth later is a drop-in replacement (it needs
-provider credentials + a backend, which a static client-only app can't hold).
+- **Auth** — register / log in with email + password (bcrypt-hashed), JWT
+  sessions. `POST /api/auth/register|login`, `GET /api/auth/me`.
+- **Cloud-synced progress** — read state, bookmarks, notes, streak, and history
+  follow you across devices. `GET|PUT /api/progress` (debounced sync).
+- **Community discussions** — per-topic comment threads, public to read, posting
+  requires an account. `GET|POST /api/topics/:id/comments`, `DELETE /api/comments/:id`.
+
+The frontend talks to the API via `src/api/backend.js` and **degrades
+gracefully**: if the server is unreachable it falls back to a local-only account
+(progress in `localStorage`) and hides community features until it's back.
+
+Progress dashboard at `#/me`: topics read, % complete, daily streak,
+per-category completion bars, milestones, continue-reading, and recent history.
+
+### Run the backend
+
+```bash
+cd server && npm install && npm start   # http://localhost:8787
+```
+
+Then run the frontend (`npm run dev`). Configure the API origin with
+`VITE_API_URL` (defaults to `http://localhost:8787`).
+
+### Social sign-in / production notes
+
+The sign-in modal shows Google/Facebook/Instagram/Substack/X/Apple buttons; real
+OAuth needs each provider's credentials + redirect handling, so those are flagged
+"at launch" for now and email/password is the working path. For deployment, set a
+strong `JWT_SECRET`, point `DB_PATH` at persistent storage (or swap SQLite for
+managed Postgres — the query surface in `server/db.js` is standard SQL), and host
+the API behind HTTPS.
 
 ## Two reading levels (genuinely different content)
 
