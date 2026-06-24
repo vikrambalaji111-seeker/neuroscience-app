@@ -175,6 +175,16 @@ export const ALL_TOPICS = Object.values(TOPICS_BY_ID).map((t) => ({
   categoryName: getCategory(t.categoryId)?.name || '',
 }))
 
+// Related topics = other topics in the same category. This is a structural
+// relationship from the taxonomy, not generated/inferred content.
+export function getSiblingTopics(topicId, limit = 6) {
+  const topic = TOPICS_BY_ID[topicId]
+  if (!topic) return []
+  return ALL_TOPICS.filter(
+    (t) => t.categoryId === topic.categoryId && t.id !== topicId
+  ).slice(0, limit)
+}
+
 // Simple case-insensitive substring search across topic and category names.
 export function searchTopics(query, limit = 8) {
   const q = query.trim().toLowerCase()

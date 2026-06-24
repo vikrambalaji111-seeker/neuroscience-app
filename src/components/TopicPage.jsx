@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchTopicContent, SECTION_ORDER } from '../api/wikipedia.js'
 import { fetchStudies } from '../api/literature.js'
 import { summarizeText, gatherPageText } from '../utils/summarize.js'
+import { getSiblingTopics } from '../data/taxonomy.js'
 
 // On-demand summary panel. Runs ONLY when the user clicks; produces an
 // extractive summary (sentences taken verbatim from the sourced text on this
@@ -107,7 +108,46 @@ function StudyList({ status, studies, query }) {
   )
 }
 
-export default function TopicPage({ topic, onBack }) {
+// Related topics from the same category (structural, not generated).
+function RelatedTopics({ topicId, onOpenTopic }) {
+  const siblings = getSiblingTopics(topicId)
+  if (!siblings.length) return null
+  return (
+    <section className="topic-section related">
+      <h3>Related topics</h3>
+      <p className="section-note">More in {siblings[0].categoryName}.</p>
+      <div className="related-chips">
+        {siblings.map((t) => (
+          <button key={t.id} className="related-chip" onClick={() => onOpenTopic(t.id)}>
+            {t.name}
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// Studies layer. Collapsed by default for beginners (the technical/frontier
+// material), expanded up front for researchers.
+function StudiesSection({ studyStatus, studies, query, level }) {
+  const [open, setOpen] = useState(level === 'researcher')
+  useEffect(() => { setOpen(level === 'researcher') }, [level])
+
+  return (
+    <section className="topic-section">
+      <div className="summary-head">
+        <h3>Studies, experiments &amp; the scientists behind them</h3>
+        <button className="collapse-btn" onClick={() => setOpen((o) => !o)}>
+          {open ? 'Hide' : `Show${studies.length ? ` (${studies.length})` : ''}`}
+        </button>
+      </div>
+      <p className="section-note">Recent peer-reviewed publications from Europe PMC, newest first.</p>
+      {open && <StudyList status={studyStatus} studies={studies} query={query} />}
+    </section>
+  )
+}
+
+export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTopic }) {
   const [content, setContent] = useState(null)
   const [status, setStatus] = useState('loading')
   const [studies, setStudies] = useState([])
@@ -175,12 +215,16 @@ export default function TopicPage({ topic, onBack }) {
             <Section key={s.key} label={s.label} data={content.sections[s.key]} />
           ))}
 
-          {/* Studies & experiments layer */}
-          <section className="topic-section">
-            <h3>Studies, experiments &amp; the scientists behind them</h3>
-            <p className="section-note">Recent peer-reviewed publications from Europe PMC, newest first.</p>
-            <StudyList status={studyStatus} studies={studies} query={topic.query} />
-          </section>
+          {/* Studies & experiments layer (collapsible by reading level) */}
+          <StudiesSection
+            studyStatus={studyStatus}
+            studies={studies}
+            query={topic.query}
+            level={level}
+          />
+
+          {/* Related topics from the same category */}
+          {onOpenTopic && <RelatedTopics topicId={topic.id} onOpenTopic={onOpenTopic} />}
         </>
       )}
     </article>

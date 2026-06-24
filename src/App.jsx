@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { CATEGORIES, getCategory, TOPICS_BY_ID } from './data/taxonomy.js'
 import TopicPage from './components/TopicPage.jsx'
 import Search from './components/Search.jsx'
@@ -82,7 +83,7 @@ function Home({ onOpenCategory }) {
 
 // Resolves the current route to a view, tolerating unknown ids from a
 // hand-edited or stale URL.
-function MainView({ route, openCategory, openTopic, goHome }) {
+function MainView({ route, openCategory, openTopic, goHome, level }) {
   if (route.view === 'category') {
     const category = getCategory(route.id)
     if (!category) return <NotFound goHome={goHome} />
@@ -91,9 +92,41 @@ function MainView({ route, openCategory, openTopic, goHome }) {
   if (route.view === 'topic') {
     const topic = TOPICS_BY_ID[route.id]
     if (!topic) return <NotFound goHome={goHome} />
-    return <TopicPage topic={topic} onBack={() => openCategory(topic.categoryId)} />
+    return (
+      <TopicPage
+        topic={topic}
+        level={level}
+        onBack={() => openCategory(topic.categoryId)}
+        onOpenTopic={openTopic}
+      />
+    )
   }
   return <Home onOpenCategory={openCategory} />
+}
+
+// Beginner vs Researcher reading level. This does NOT rewrite any content
+// (that would be generating text). It controls how much sourced material is
+// emphasised: beginners get the encyclopedic sections with the technical
+// literature collapsed; researchers get the studies panel expanded up front.
+const LEVELS = [
+  { id: 'beginner', label: 'Beginner' },
+  { id: 'researcher', label: 'Researcher' },
+]
+
+function LevelToggle({ level, setLevel }) {
+  return (
+    <div className="level-toggle" role="group" aria-label="Reading level">
+      {LEVELS.map((l) => (
+        <button
+          key={l.id}
+          className={`level-btn ${level === l.id ? 'active' : ''}`}
+          onClick={() => setLevel(l.id)}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function NotFound({ goHome }) {
@@ -109,6 +142,12 @@ function NotFound({ goHome }) {
 export default function App() {
   // Hash-based routing: shareable URLs + browser back/forward support.
   const [route, navigate] = useHashRoute()
+
+  // Reading level, persisted across sessions.
+  const [level, setLevelState] = useState(
+    () => localStorage.getItem('ns-level') || 'beginner'
+  )
+  const setLevel = (l) => { setLevelState(l); localStorage.setItem('ns-level', l) }
 
   const openCategory = (id) => navigate({ view: 'category', id })
   const openTopic = (id) => navigate({ view: 'topic', id })
@@ -126,6 +165,7 @@ export default function App() {
       <aside className="sidebar">
         <button className="brand" onClick={goHome}>🧠 Neuroscience</button>
         <Search onOpenTopic={openTopic} />
+        <LevelToggle level={level} setLevel={setLevel} />
         <nav>
           {CATEGORIES.map((c) => (
             <button
@@ -145,6 +185,7 @@ export default function App() {
           openCategory={openCategory}
           openTopic={openTopic}
           goHome={goHome}
+          level={level}
         />
       </main>
     </div>
