@@ -75,3 +75,46 @@ export async function fetchStudies(term, fallbackQuery, { pageSize = 12, sort = 
   studyCache.set(cacheKey, results)
   return results
 }
+
+// Strip Europe PMC's occasional inline markup / structured-abstract labels and
+// trim to a readable excerpt.
+function cleanAbstract(text) {
+  if (!text) return ''
+  return text
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const reviewCache = new Map()
+
+// Second content provider for the researcher view: title-matched *review*
+// articles (most-cited first) with their abstracts shown verbatim. Reviews are
+// where mechanisms, challenges and open questions are synthesised — so this
+// densifies the frontier sections with real, attributed, sourced prose.
+export async function fetchReviews(term, { pageSize = 4 } = {}) {
+  const t = coreTerm(term)
+  if (reviewCache.has(t)) return reviewCache.get(t)
+
+  const query = `(TITLE:"${t}") AND (PUB_TYPE:"review") AND (HAS_ABSTRACT:Y)`
+  const url =
+    `${BASE}?query=${encodeURIComponent(query)}&resultType=core&format=json` +
+    `&pageSize=${pageSize}&sort=${encodeURIComponent('CITED desc')}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Europe PMC reviews ${res.status}`)
+  const data = await res.json()
+  const reviews = (data.resultList?.result || [])
+    .filter((r) => r.title && r.abstractText)
+    .map((r) => ({
+      id: r.id,
+      title: r.title.replace(/\.$/, ''),
+      authors: r.authorString || 'Authors not listed',
+      journal: r.journalInfo?.journal?.title || r.journalTitle || '',
+      year: r.pubYear || '',
+      citedBy: r.citedByCount ?? null,
+      abstract: cleanAbstract(r.abstractText),
+      url: articleUrl(r),
+    }))
+  reviewCache.set(t, reviews)
+  return reviews
+}

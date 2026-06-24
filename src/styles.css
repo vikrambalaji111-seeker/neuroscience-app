@@ -451,6 +451,11 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
 .study-title:hover { color: var(--accent); }
 .study-meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
+/* Review cards (second content provider) */
+.review { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.review:last-child { border-bottom: none; }
+.review-abstract { margin: 8px 0 6px; color: var(--text); font-size: 14px; line-height: 1.55; }
+
 @media (max-width: 720px) {
   .app { flex-direction: column; }
   .sidebar { width: 100%; height: auto; position: static; }

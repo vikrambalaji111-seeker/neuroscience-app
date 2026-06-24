@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchTopicContent } from '../api/wikipedia.js'
-import { fetchStudies } from '../api/literature.js'
+import { fetchStudies, fetchReviews } from '../api/literature.js'
 import { summarizeText, gatherPageText } from '../utils/summarize.js'
 import { getSiblingTopics } from '../data/taxonomy.js'
 import { referenceSources, scholarlySources } from '../data/sources.js'
@@ -142,6 +142,66 @@ function ResearcherStudies({ term, fallbackQuery }) {
   )
 }
 
+// Second content provider: title-matched review abstracts (verbatim) that
+// synthesise mechanisms, challenges and open questions — densifies the
+// researcher view where Wikipedia's own sections are thin.
+function ReviewCard({ review }) {
+  const [open, setOpen] = useState(false)
+  const preview = review.abstract.length > 320 && !open
+    ? review.abstract.slice(0, 320).trimEnd() + '…'
+    : review.abstract
+  return (
+    <li className="review">
+      <a href={review.url} target="_blank" rel="noreferrer" className="study-title">{review.title}</a>
+      <div className="study-meta">
+        <span className="authors">{review.authors}</span>
+        {review.journal && <span> · {review.journal}</span>}
+        {review.year && <span> · {review.year}</span>}
+        {review.citedBy != null && <span> · cited by {review.citedBy}</span>}
+      </div>
+      <p className="review-abstract">{preview}</p>
+      {review.abstract.length > 320 && (
+        <button className="collapse-btn" onClick={() => setOpen((o) => !o)}>
+          {open ? 'Show less' : 'Read full abstract'}
+        </button>
+      )}
+    </li>
+  )
+}
+
+function KeyReviews({ term }) {
+  const [reviews, setReviews] = useState([])
+  const [status, setStatus] = useState('loading')
+
+  useEffect(() => {
+    let alive = true
+    setStatus('loading')
+    fetchReviews(term)
+      .then((r) => { if (alive) { setReviews(r); setStatus('ready') } })
+      .catch(() => { if (alive) setStatus('error') })
+    return () => { alive = false }
+  }, [term])
+
+  if (status === 'ready' && !reviews.length) return null // stay quiet if none
+
+  return (
+    <section className="topic-section">
+      <h3>Key reviews on {term}</h3>
+      <p className="section-note">
+        Most-cited review articles from Europe PMC. Abstracts shown verbatim — reviews
+        synthesise the mechanisms, challenges and open questions in a field.
+      </p>
+      {status === 'loading' && <p className="loading">Finding key reviews…</p>}
+      {status === 'error' && <p className="no-refs">Could not load reviews. Try again later.</p>}
+      {status === 'ready' && (
+        <ul className="study-list">
+          {reviews.map((r) => <ReviewCard key={r.id} review={r} />)}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 function RelatedTopics({ topicId, onOpenTopic }) {
   const siblings = getSiblingTopics(topicId)
   if (!siblings.length) return null
@@ -208,6 +268,8 @@ export default function TopicPage({ topic, onBack, level = 'beginner', onOpenTop
               {RESEARCHER_SECTIONS.map((s) => (
                 <Section key={s.key} label={s.label} data={content.sections[s.key]} />
               ))}
+
+              <KeyReviews term={term} />
 
               <ResearcherStudies term={term} fallbackQuery={topic.query} />
 
