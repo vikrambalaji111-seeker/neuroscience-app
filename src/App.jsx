@@ -63,17 +63,19 @@ function CategoryView({ category, onOpen }) {
   )
 }
 
-function Home({ onOpenCategory }) {
+function Home({ onOpenCategory, categories, level }) {
+  const researcher = level === 'researcher'
   return (
     <div className="home">
-      <h1>Neuroscience</h1>
+      <span className="home-eyebrow">{researcher ? 'Researcher workspace' : 'Welcome'}</span>
+      <h1>{researcher ? 'Track the frontier' : 'Understand the brain'}</h1>
       <p className="lede">
-        A sourced reading app for the brain — built for newcomers seeking
-        foundations and for researchers tracking the frontier. Every page is
-        fetched live from cited sources. Nothing here is written by the app.
+        {researcher
+          ? 'Mechanisms, open questions, key reviews and primary literature — the advanced view, without the 101 basics. Everything traces to a cited source.'
+          : 'A sourced reading app for the brain. Start with Neuroscience 101, then explore by anatomy, function, disorders and more. Nothing here is written by the app — every page is cited.'}
       </p>
       <div className="cat-grid">
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
             key={c.id}
             className={`cat-card ${c.featured ? 'featured' : ''}`}
@@ -101,7 +103,7 @@ function Home({ onOpenCategory }) {
 
 // Resolves the current route to a view, tolerating unknown ids from a
 // hand-edited or stale URL.
-function MainView({ route, openCategory, openTopic, goHome, level, onSignIn }) {
+function MainView({ route, openCategory, openTopic, goHome, level, onSignIn, categories }) {
   if (route.view === 'category') {
     const category = getCategory(route.id)
     if (!category) return <NotFound goHome={goHome} />
@@ -123,7 +125,7 @@ function MainView({ route, openCategory, openTopic, goHome, level, onSignIn }) {
   if (route.view === 'profile') {
     return <Profile onOpenTopic={openTopic} onOpenCategory={openCategory} onSignIn={onSignIn} />
   }
-  return <Home onOpenCategory={openCategory} />
+  return <Home onOpenCategory={openCategory} categories={categories} level={level} />
 }
 
 // Sidebar account area — sign-in prompt for anonymous users, or a chip linking
@@ -208,15 +210,20 @@ export default function App() {
         ? TOPICS_BY_ID[route.id]?.categoryId
         : null
 
+  // Beginner vs Researcher see different categories. Neuroscience 101 (the
+  // foundations) is a beginner thing — researchers don't need it.
+  const visibleCategories =
+    level === 'researcher' ? CATEGORIES.filter((c) => c.id !== 'ns101') : CATEGORIES
+
   return (
-    <div className="app">
+    <div className={`app level-${level}`}>
       <aside className="sidebar">
         <button className="brand" onClick={goHome}>🧠 Neuroscience</button>
         <AccountBox onSignIn={() => setShowAuth(true)} onOpenProfile={openProfile} />
         <Search onOpenTopic={openTopic} />
         <LevelToggle level={level} setLevel={setLevel} />
         <nav>
-          {CATEGORIES.map((c) => (
+          {visibleCategories.map((c) => (
             <button
               key={c.id}
               className={`nav-item ${activeCategoryId === c.id ? 'active' : ''}`}
@@ -235,6 +242,7 @@ export default function App() {
           openTopic={openTopic}
           goHome={goHome}
           level={level}
+          categories={visibleCategories}
           onSignIn={() => setShowAuth(true)}
         />
       </main>

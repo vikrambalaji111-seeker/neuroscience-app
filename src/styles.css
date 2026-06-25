@@ -1,15 +1,37 @@
 :root {
-  --bg: #0f1115;
-  --panel: #161a21;
-  --panel-2: #1c222b;
-  --border: #262d38;
-  --text: #e6e9ef;
-  --muted: #9aa3b0;
-  --accent: #7c9cff;
-  --accent-soft: #2a3454;
-  --warn: #f0a868;
-  --radius: 12px;
-  --maxw: 820px;
+  /* Clean, science-forward light theme */
+  --bg: #ffffff;            /* white — clarity, cleanliness */
+  --bg-2: #f3f4f6;          /* soft gray — neutral surface */
+  --panel: #ffffff;         /* cards */
+  --panel-2: #f3f4f6;       /* nested surfaces / inputs */
+  --border: #cbd5e1;        /* silver — precision */
+  --border-soft: #e5e7eb;
+  --text: #1f2937;          /* charcoal — sophistication */
+  --muted: #6b7280;         /* secondary text */
+  --brand: #1e3a8a;         /* deep blue — trust, intelligence, science */
+  --accent: #3b82f6;        /* electric blue — buttons, highlights (per-level below) */
+  --accent-2: #06b6d4;      /* cyan — neural signals, accents */
+  --accent-soft: #e0f2fe;   /* light tint for active states */
+  --secondary: #0f766e;     /* teal — healing, balance */
+  --good: #10b981;          /* emerald — success */
+  --warn: #b45309;          /* amber-700 — readable on light */
+  --radius: 14px;
+  --maxw: 760px;
+  --shadow: 0 4px 20px rgba(2, 6, 23, 0.08);
+  --shadow-sm: 0 1px 4px rgba(2, 6, 23, 0.06);
+}
+
+/* Each reading level gets its own accent — a clear signal of which view you're
+   in. Beginner = electric blue / cyan; Researcher = indigo / purple. */
+.app.level-beginner {
+  --accent: #3b82f6;
+  --accent-2: #06b6d4;
+  --accent-soft: #e0f2fe;
+}
+.app.level-researcher {
+  --accent: #4f46e5;        /* indigo — deep thinking */
+  --accent-2: #7c3aed;      /* purple — higher cognition */
+  --accent-soft: #ede9fe;   /* lavender — calm */
 }
 
 * { box-sizing: border-box; }
@@ -17,11 +39,21 @@
 html, body, #root { height: 100%; margin: 0; }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(1100px 620px at 80% -12%, #eef2ff 0%, rgba(238, 242, 255, 0) 60%),
+    var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, ui-serif, serif;
+  font-size: 16.5px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* UI chrome (sidebar, buttons, labels) uses a clean sans; reading prose stays serif. */
+.sidebar, .nav-item, .brand, button, input, textarea, .section-note, .attribution,
+.study-meta, .tier-badge, .featured-tag, .home-eyebrow, .level-pill, .src-tag,
+.stat-label, .comment-head { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
 .app { display: flex; min-height: 100vh; }
 
@@ -29,7 +61,7 @@ body {
 .sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: var(--panel);
+  background: var(--bg-2);
   border-right: 1px solid var(--border);
   padding: 20px 14px;
   position: sticky;
@@ -56,7 +88,7 @@ body {
   gap: 10px;
   width: 100%;
   text-align: left;
-  background: var(--panel-2);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
@@ -74,7 +106,7 @@ body {
   width: 44px; height: 44px;
   border-radius: 999px;
   background: var(--accent);
-  color: #0f1115;
+  color: var(--bg);
   display: grid; place-items: center;
   font-weight: 700; font-size: 18px;
   flex-shrink: 0;
@@ -135,8 +167,8 @@ body {
 .auth-fineprint { margin-top: 14px; }
 .auth-tabs { display: flex; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; margin-bottom: 16px; }
 .auth-tabs button { flex: 1; background: none; border: none; color: var(--muted); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.auth-tabs button.active { background: var(--accent); color: #0f1115; font-weight: 600; }
-.auth-error { color: #ff8f8f; font-size: 13px; margin: 2px 0 0; }
+.auth-tabs button.active { background: var(--accent); color: var(--bg); font-weight: 600; }
+.auth-error { color: #dc2626; font-size: 13px; margin: 2px 0 0; }
 .social-note { margin-top: 8px; color: var(--warn); }
 
 /* Discussion thread */
@@ -215,7 +247,7 @@ body {
 .search { position: relative; margin-bottom: 16px; }
 .search-input {
   width: 100%;
-  background: var(--panel-2);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 9px 12px;
@@ -256,7 +288,7 @@ body {
 .level-toggle {
   display: flex;
   gap: 4px;
-  background: var(--panel-2);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 9px;
   padding: 4px;
@@ -274,7 +306,7 @@ body {
   transition: background .15s, color .15s;
 }
 .level-btn:hover { color: var(--text); }
-.level-btn.active { background: var(--accent); color: #0f1115; font-weight: 600; }
+.level-btn.active { background: var(--accent); color: var(--bg); font-weight: 600; }
 
 .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
 .nav-item {
@@ -289,17 +321,27 @@ body {
   transition: background .15s, color .15s;
 }
 .nav-item:hover { background: var(--panel-2); color: var(--text); }
-.nav-item.active { background: var(--accent-soft); color: var(--text); }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
 
 /* Content */
-.content { flex: 1; padding: 40px 48px; overflow-x: hidden; }
+.content { flex: 1; padding: 44px 52px 80px; overflow-x: hidden; }
 .home, .category-view, .topic-page { max-width: var(--maxw); margin: 0 auto; }
 
-h1 { font-size: 30px; margin: 0 0 8px; letter-spacing: -0.02em; }
-h2 { font-size: 20px; margin: 28px 0 12px; }
-h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
+h1 { font-size: 34px; line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.02em; color: var(--text); }
+.home h1 { color: var(--brand); }
+h2 { font-size: 21px; margin: 30px 0 14px; color: var(--text); }
+h3 { font-size: 17px; margin: 0 0 12px; color: var(--accent-2); font-weight: 600; letter-spacing: 0.01em; }
 
-.lede, .category-blurb { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+.home-eyebrow {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.lede, .category-blurb { color: var(--muted); font-size: 17.5px; line-height: 1.6; margin-bottom: 30px; max-width: 62ch; }
 
 /* Home category grid */
 .cat-grid {
@@ -312,21 +354,34 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 20px;
   cursor: pointer;
   color: var(--text);
-  transition: border-color .15s, transform .1s;
+  box-shadow: var(--shadow-sm);
+  transition: border-color .15s, transform .12s, box-shadow .15s;
 }
-.cat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.cat-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
 .cat-card.featured {
   border-color: var(--accent);
-  background: linear-gradient(160deg, var(--accent-soft), var(--panel));
+  background:
+    linear-gradient(150deg, var(--accent-soft) 0%, var(--panel) 60%);
   grid-column: 1 / -1;
+  box-shadow: var(--shadow);
 }
+.cat-card.featured::before {
+  content: '';
+  display: block;
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: linear-gradient(var(--accent), var(--accent-2));
+}
+.cat-card { position: relative; overflow: hidden; }
 .featured-tag {
   display: inline-block;
   background: var(--accent);
-  color: #0f1115;
+  color: var(--bg);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -395,7 +450,7 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
 .spine-node:hover { border-color: var(--accent); background: var(--accent-soft); }
 .spine-num {
   background: var(--accent);
-  color: #0f1115;
+  color: var(--bg);
   font-weight: 700;
   font-size: 11px;
   border-radius: 999px;
@@ -426,9 +481,8 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
   border-radius: 999px;
   margin: 4px 0 0;
 }
-.level-pill.level-beginner { background: #1f6f43; color: #d6ffe6; }
-.level-pill.level-researcher { background: #3a4a7a; color: #dde6ff; }
-.attribution { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+.level-pill { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+.attribution { color: var(--muted); font-size: 13px; margin: 8px 0 0; line-height: 1.5; }
 
 /* Study sort toggle */
 .sort-toggle { display: flex; gap: 4px; flex-shrink: 0; }
@@ -441,7 +495,7 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
   font-size: 12px;
   cursor: pointer;
 }
-.sort-toggle button.active { background: var(--accent); color: #0f1115; font-weight: 600; border-color: var(--accent); }
+.sort-toggle button.active { background: var(--accent); color: var(--bg); font-weight: 600; border-color: var(--accent); }
 
 /* External source cards */
 .source-list {
@@ -467,15 +521,36 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
 .attribution a { color: var(--accent); }
 
 .topic-section {
-  background: var(--panel);
+  position: relative;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 22px;
-  margin-bottom: 14px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
 }
-.topic-section p { margin: 0 0 12px; }
-.topic-section.empty { background: transparent; border-style: dashed; }
-.section-note { color: var(--muted); font-size: 13px; }
+/* A warm accent rule under each section heading makes sections stand out. */
+.topic-section > h3:first-child {
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.topic-section > h3:first-child::before {
+  content: '';
+  width: 4px;
+  height: 17px;
+  border-radius: 99px;
+  background: linear-gradient(var(--accent), var(--accent-2));
+  flex-shrink: 0;
+}
+.topic-section p { margin: 0 0 14px; font-size: 16.5px; line-height: 1.75; }
+.topic-section p:last-of-type { margin-bottom: 12px; }
+.topic-section.empty { background: transparent; border-style: dashed; box-shadow: none; }
+.topic-section.empty > h3:first-child { border-bottom: none; }
+.section-note { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
 .no-refs { color: var(--warn); font-size: 14px; font-style: italic; margin: 0; }
 
 .src-tag {
@@ -511,7 +586,7 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
 .summary-head h3 { margin: 0; }
 .summarize-btn {
   background: var(--accent);
-  color: #0f1115;
+  color: var(--bg);
   border: none;
   border-radius: 8px;
   padding: 8px 14px;
@@ -587,7 +662,7 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
   color: #fff;
   font-size: 16px;
 }
-.video-thumb:hover .video-play { background: var(--accent); color: #0f1115; }
+.video-thumb:hover .video-play { background: var(--accent); color: var(--bg); }
 .video-embed { aspect-ratio: 16 / 9; }
 .video-embed iframe { width: 100%; height: 100%; border: 0; display: block; }
 .video-meta { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
@@ -603,9 +678,9 @@ h3 { font-size: 16px; margin: 0 0 10px; color: var(--accent); }
   padding: 2px 7px;
   border-radius: 999px;
 }
-.tier-badge.tier-1 { background: #1f6f43; color: #d6ffe6; }
-.tier-badge.tier-2 { background: #3a4a7a; color: #dde6ff; }
-.tier-badge.tier-3 { background: #4a4a52; color: #e0e0e6; }
+.tier-badge.tier-1 { background: #dbeafe; color: #1e3a8a; }   /* academic — deep blue */
+.tier-badge.tier-2 { background: #ccfbf1; color: #0f766e; }   /* educator — teal */
+.tier-badge.tier-3 { background: #f3f4f6; color: #6b7280; }   /* other — gray */
 .yt-note { margin-top: 14px; }
 .yt-note code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
 .yt-links { margin-top: 10px; }
