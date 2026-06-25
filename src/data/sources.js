@@ -10,6 +10,21 @@
 // the Beginner and Researcher views can surface the right kind of source.
 // ---------------------------------------------------------------------------
 
+// Curated PRIMARY reference sites (the project's preferred sources). Shown on
+// every topic page. Each is a real, scoped search/lookup URL — scoped searches
+// never 404, and nothing is fabricated. Used app-wide; for non-textbook topics
+// these are the recommended references, with Wikipedia only as a fallback.
+export function secondarySources(term) {
+  const q = encodeURIComponent(term)
+  return [
+    { name: 'BrainStuff', type: 'Public neuroscience', url: `https://www.google.com/search?q=${q}+site:brainstuff.org` },
+    { name: 'Neuroscience Online', type: 'Open textbook · UT Houston', url: `https://www.google.com/search?q=${q}+site:nba.uth.tmc.edu` },
+    { name: 'BrainFacts.org', type: 'Public neuroscience · SfN', url: `https://www.brainfacts.org/search?q=${q}` },
+    { name: 'Brain Injury Association', type: 'Clinical · BIAA', url: `https://www.google.com/search?q=${q}+site:biausa.org` },
+    { name: 'Neuroscience News', type: 'Research news', url: `https://neurosciencenews.com/?s=${q}` },
+  ]
+}
+
 // Encyclopedic / educational references — beginner-friendly, explanatory.
 export function referenceSources(term) {
   const q = encodeURIComponent(term)

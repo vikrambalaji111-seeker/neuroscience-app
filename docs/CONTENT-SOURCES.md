@@ -4,7 +4,31 @@ Every piece of information in the app traces to a real, external, citable source
 This doc explains each provider and how the cardinal rule (see `CLAUDE.md`) is
 enforced in code.
 
-## 1. Wikipedia — article prose (`src/api/wikipedia.js`)
+## 0. Open Neuroscience Initiative textbook — PRIMARY for Neuroscience 101 (`src/data/oniContent.js`)
+
+The Neuroscience 101 category is sourced from the free, open-access textbook
+**“Open Neuroscience Initiative”** (Austin Lim, DePaul University, 2021, **CC BY-NC 4.0**,
+https://via.library.depaul.edu/cshtextbooks/2). Its taxonomy mirrors the book's
+16 chapters; each topic carries a `section` (e.g. `4.4`) and shows a **verbatim
+lead excerpt** of that section with full attribution + a link to the free book.
+
+`oniContent.js` is generated from the source text by the committed parser
+(`node tools/parse-oni.mjs "<book>.txt"`): it detects real section headers (rejecting
+figure-credit/URL/measurement false-positives), strips page numbers and figure
+captions, and takes the section's clean lead (~1400 chars). To regenerate, re-run
+the parser against the source PDF/text and overwrite the file. Excerpts are
+reflowed (whitespace only) — never reworded. Occasional figure-caption fragments
+may interleave; that's still verbatim book text, not generated.
+
+## Curated secondary sources (`src/data/sources.js` → `secondarySources`)
+
+Featured app-wide (and the *recommended* references for the non-textbook
+categories, with Wikipedia as fallback). Scoped deep links, never fetched:
+BrainStuff, Neuroscience Online (UT Houston), BrainFacts.org (SfN), Brain Injury
+Association (BIAA), Neuroscience News. Sites without a known search param use a
+Google site-scoped search URL so links never 404.
+
+## 1. Wikipedia — FALLBACK article prose (`src/api/wikipedia.js`)
 
 - **Overview:** REST summary `GET /api/rest_v1/page/summary/{title}` → intro extract + thumbnail + canonical URL.
 - **Sections:** Action API `?action=parse&prop=sections` lists top-level headings; `&prop=text&section=N` fetches each section's HTML, cleaned by `htmlToText` (strips citation markers, tables, edit links, infoboxes; keeps the first ~6 paragraphs).

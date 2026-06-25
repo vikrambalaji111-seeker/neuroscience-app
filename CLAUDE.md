@@ -14,12 +14,19 @@ release.
 - **Backend:** Express + Node's built-in `node:sqlite` (zero native deps). Lives in `server/`.
 - Repo: `vikrambalaji111-seeker/neuroscience-app`. Active branch: `build-neuroscience-app` (PR #1). Main branch: `main`.
 
+## Content sources (priority order)
+
+1. **Neuroscience 101** is sourced from the open-access textbook **“Open Neuroscience Initiative”** (Austin Lim, DePaul, 2021, **CC BY-NC 4.0**). Its taxonomy mirrors the book's 16 chapters; each topic shows a **verbatim excerpt** of its book section (`src/data/oniContent.js`, keyed by `topic.section`).
+2. **Curated secondary sources** (featured app-wide via `src/data/sources.js` → `secondarySources`): BrainStuff, Neuroscience Online (UT Houston), BrainFacts.org, Brain Injury Association, Neuroscience News — shown as scoped deep links.
+3. **Wikipedia** is the **fallback** content for the *other* categories (Anatomy, Scale, Functions, Disorders, Branches, Lifespan) — used because it's the only prose source we can fetch live; framed in the UI as "Wikipedia · fallback".
+4. **Europe PMC** (studies + review abstracts) and **YouTube** (authenticity-ranked videos) accompany topics as before.
+
 ## ⛔ The cardinal rule: NO HALLUCINATION
 
 This is the product's defining constraint. **Never author, invent, paraphrase-to-
 distortion, or generate neuroscience facts** — in code, content, or tests.
 
-- All displayed knowledge is **fetched live from real, citable sources** and shown with attribution + links.
+- All displayed knowledge is **fetched from real, citable sources** (the textbook, Wikipedia, Europe PMC, YouTube) and shown with attribution + links.
 - When a source has nothing, the UI shows **“No referenced content available”** / “no references” — it never fills the gap.
 - Video IDs are **verified against YouTube (oEmbed)** before display; a wrong ID 404s and is dropped. Display YouTube's own returned title/author, never a claimed one.
 - Summarize is **extractive only** — it selects sentences verbatim from already-cited on-page text.
@@ -70,8 +77,9 @@ back to local-only accounts/progress (localStorage) and hides community features
 | `src/main.jsx` | Entry. Wraps `<App>` in `ErrorBoundary` + `AuthProvider`. |
 | `src/App.jsx` | Layout, sidebar, hash routing, level toggle, account box, auth modal host. |
 | `src/hooks/useHashRoute.js` | Hash router: `#/`, `#/c/:id`, `#/t/:id`, `#/me`. |
-| `src/data/taxonomy.js` | **Browse structure only** — categories/topics, each with `wiki` title + `query`. Helpers: `getCategory`, `getSiblingTopics`, `searchTopics`, `ALL_TOPICS`, `TOPICS_BY_ID`. |
-| `src/data/sources.js` | Per-topic deep-link search URLs: `referenceSources` (beginner) / `scholarlySources` (researcher). |
+| `src/data/taxonomy.js` | **Browse structure only** — 7 categories. NS101 topics carry `section` (book); others carry `wiki`. Helpers: `getCategory`, `getSiblingTopics`, `searchTopics`, `ALL_TOPICS`, `TOPICS_BY_ID`. |
+| `src/data/oniContent.js` | **Primary NS101 content** — verbatim excerpts from the Open Neuroscience Initiative textbook, keyed by section. Regenerate: `node tools/parse-oni.mjs "<book>.txt"`. |
+| `src/data/sources.js` | Per-topic deep-link search URLs: `secondarySources` (curated, app-wide) + `referenceSources` (beginner) / `scholarlySources` (researcher). |
 | `src/data/videoSeeds.js` | oEmbed-verified YouTube IDs keyed by topic/category id. |
 | `src/api/wikipedia.js` | Live Wikipedia fetch; maps headings → conceptual buckets. In-memory cache. |
 | `src/api/literature.js` | Europe PMC: `fetchStudies` (title-matched), `fetchReviews` (abstracts). Cache. |

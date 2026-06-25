@@ -26,14 +26,20 @@ pointers to where content is fetched.
 
 ## Topic shape
 
+A topic is either **book-backed** (Neuroscience 101) or **wiki-backed** (every
+other category):
+
 ```js
-{
-  id: 'parkinsons',                // globally unique across ALL categories
-  name: "Parkinson's disease",     // display label
-  wiki: "Parkinson's disease",     // EXACT English Wikipedia article title (content source)
-  query: 'Parkinson disease',      // Europe PMC / video search string
-}
+// Book-backed (Neuroscience 101) — primary content from the textbook:
+{ id: 'oni-4-4', name: 'The action potential', section: '4.4', query: 'action potential' }
+
+// Wiki-backed (other categories) — Wikipedia is the fallback content source:
+{ id: 'parkinsons', name: "Parkinson's disease", wiki: "Parkinson's disease", query: 'Parkinson disease' }
 ```
+
+- `section` → key into `src/data/oniContent.js` (verbatim textbook excerpt). `TopicPage` renders the book path when `topic.section` is present, else the Wikipedia path.
+- `wiki` → exact English Wikipedia article title (followed redirects; verify it resolves).
+- `query` → Europe PMC / video / curated-source search string (used by both).
 
 - `id` must be unique app-wide (it keys `TOPICS_BY_ID` and the URL). Neuroscience 101 topics are prefixed `ns101-` to avoid colliding with the same concept elsewhere.
 - `wiki` must be a real article title (redirects are followed, but verify it resolves — a bad title yields an honest "could not load" page, never invented content).
@@ -41,13 +47,15 @@ pointers to where content is fetched.
 
 ## The categories (7)
 
-1. **Neuroscience 101** (`ns101`, featured) — the comprehensive 8-group foundation (65 topics): Cellular & Molecular · Neuroanatomy · Sensory · Motor · Higher Cognitive · Development/Plasticity/Ageing · Disorders · Methods & History.
+1. **Neuroscience 101** (`ns101`, featured, **book-backed**) — mirrors the textbook's 16 chapters as groups (64 topics, ids `oni-<ch>-<sec>`). Content from `oniContent.js`.
 2. **Anatomy / Structure** (`anatomy`, grid) — ~20 regions/cells/circuits.
 3. **Level of Analysis / Scale** (`scale`, spine) — molecular → … → social.
 4. **Functions** (`functions`, grid).
 5. **Disorders / Clinical** (`disorders`, groups).
-6. **Neurochemistry / Signalling** (`neurochemistry`, grid).
+6. **Branches of Neuroscience** (`branches`, grid) — ~17 subfields (cognitive, molecular, computational, …). *Replaced the former Neurochemistry category.*
 7. **Lifespan / Development** (`lifespan`, grid).
+
+Categories 2–7 are wiki-backed and feature the curated secondary sources first.
 
 ## Derived helpers (same file)
 

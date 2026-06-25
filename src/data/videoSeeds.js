@@ -14,9 +14,9 @@ export const VIDEO_SEEDS = {
   // Foundational — shown on the Neuroscience 101 landing.
   ns101: ['vHrmiy4W9C0', 'qPix_X-9t7E', 'NNnIGh9g6fA'],
 
-  // Neuroscience 101 leaves.
-  'ns101-cns-pns': ['qPix_X-9t7E'],
-  'ns101-neurons-glia': ['qPix_X-9t7E'],
+  // Neuroscience 101 leaves (book-backed topic ids).
+  'oni-2-1': ['qPix_X-9t7E'],  // Central nervous system
+  'oni-3-1': ['qPix_X-9t7E'],  // Characteristics of neurons
 
   // Cross-listed onto matching topics elsewhere in the app.
   behaviour: ['NNnIGh9g6fA'],
