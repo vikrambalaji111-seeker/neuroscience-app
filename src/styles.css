@@ -16,6 +16,8 @@
   --secondary: #0f766e;     /* teal — healing, balance */
   --good: #10b981;          /* emerald — success */
   --warn: #b45309;          /* amber-700 — readable on light */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --radius: 14px;
   --maxw: 760px;
   --shadow: 0 4px 20px rgba(2, 6, 23, 0.08);
@@ -66,17 +68,18 @@ body {
     radial-gradient(1100px 620px at 80% -12%, var(--bg-tint) 0%, transparent 60%),
     var(--bg);
   color: var(--text);
-  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, ui-serif, serif;
-  font-size: 16.5px;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 430;
   line-height: 1.72;
-  -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* UI chrome (sidebar, buttons, labels) uses a clean sans; reading prose stays serif. */
+/* UI chrome + headings use a clean sans; reading prose stays a sturdy serif. */
+h1, h2, h3,
 .sidebar, .nav-item, .brand, button, input, textarea, .section-note, .attribution,
 .study-meta, .tier-badge, .featured-tag, .home-eyebrow, .level-pill, .src-tag,
-.stat-label, .comment-head { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+.stat-label, .comment-head, .source-type { font-family: var(--font-sans); }
 
 .app { display: flex; min-height: 100vh; }
 
@@ -583,8 +586,9 @@ h3 { font-size: 17px; margin: 0 0 12px; color: var(--accent-2); font-weight: 600
   background: linear-gradient(var(--accent), var(--accent-2));
   flex-shrink: 0;
 }
-.topic-section p { margin: 0 0 14px; font-size: 16.5px; line-height: 1.75; }
+.topic-section p { margin: 0 0 15px; font-size: 17.5px; font-weight: 440; line-height: 1.8; color: var(--text); }
 .topic-section p:last-of-type { margin-bottom: 12px; }
+.review-abstract, .comment-body { font-weight: 440; }
 .topic-section.empty { background: transparent; border-style: dashed; box-shadow: none; }
 .topic-section.empty > h3:first-child { border-bottom: none; }
 .section-note { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
