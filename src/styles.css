@@ -2,6 +2,7 @@
   /* Clean, science-forward light theme */
   --bg: #ffffff;            /* white — clarity, cleanliness */
   --bg-2: #f3f4f6;          /* soft gray — neutral surface */
+  --bg-tint: #eef2ff;       /* faint hero wash (theme-dependent) */
   --panel: #ffffff;         /* cards */
   --panel-2: #f3f4f6;       /* nested surfaces / inputs */
   --border: #cbd5e1;        /* silver — precision */
@@ -34,13 +35,35 @@
   --accent-soft: #ede9fe;   /* lavender — calm */
 }
 
+/* Dark mode — charcoal / deep-slate end of the palette. Per-level accents
+   (blue/cyan, indigo/purple) carry over; only surfaces & text flip. */
+html[data-theme='dark'] {
+  --bg: #0f172a;            /* deep slate */
+  --bg-2: #0b1220;
+  --bg-tint: #17233f;
+  --panel: #1f2937;         /* charcoal — cards */
+  --panel-2: #273244;
+  --border: #334155;
+  --border-soft: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --brand: #60a5fa;
+  --warn: #fbbf24;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background: var(--bg);
+}
+/* Active-state tints need to be dark in dark mode (the light theme uses pale tints). */
+html[data-theme='dark'] .app.level-beginner { --accent-soft: #14324b; }
+html[data-theme='dark'] .app.level-researcher { --accent-soft: #2a2154; }
+
 * { box-sizing: border-box; }
 
 html, body, #root { height: 100%; margin: 0; }
 
 body {
   background:
-    radial-gradient(1100px 620px at 80% -12%, #eef2ff 0%, rgba(238, 242, 255, 0) 60%),
+    radial-gradient(1100px 620px at 80% -12%, var(--bg-tint) 0%, transparent 60%),
     var(--bg);
   color: var(--text);
   font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, ui-serif, serif;
@@ -69,6 +92,7 @@ body {
   height: 100vh;
   overflow-y: auto;
 }
+.sidebar-head { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
 .brand {
   font-size: 18px;
   font-weight: 700;
@@ -77,10 +101,23 @@ body {
   border: none;
   cursor: pointer;
   padding: 6px 10px;
-  margin-bottom: 18px;
   text-align: left;
-  width: 100%;
+  flex: 1;
 }
+.theme-toggle {
+  flex-shrink: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color .15s, transform .1s;
+}
+.theme-toggle:hover { border-color: var(--accent); transform: translateY(-1px); }
 /* Account box */
 .account-box {
   display: flex;

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CATEGORIES, getCategory, TOPICS_BY_ID } from './data/taxonomy.js'
 import TopicPage from './components/TopicPage.jsx'
 import Search from './components/Search.jsx'
@@ -196,6 +196,14 @@ export default function App() {
   )
   const setLevel = (l) => { setLevelState(l); localStorage.setItem('ns-level', l) }
 
+  // Light / dark appearance, persisted. Applied as a data-attribute on <html>
+  // so it can drive the page background too.
+  const [theme, setTheme] = useState(() => localStorage.getItem('ns-theme') || 'light')
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('ns-theme', theme)
+  }, [theme])
+
   const [showAuth, setShowAuth] = useState(false)
 
   const openCategory = (id) => navigate({ view: 'category', id })
@@ -218,7 +226,17 @@ export default function App() {
   return (
     <div className={`app level-${level}`}>
       <aside className="sidebar">
-        <button className="brand" onClick={goHome}>🧠 Neuroscience</button>
+        <div className="sidebar-head">
+          <button className="brand" onClick={goHome}>🧠 Neuroscience</button>
+          <button
+            className="theme-toggle"
+            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label="Toggle dark mode"
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+        </div>
         <AccountBox onSignIn={() => setShowAuth(true)} onOpenProfile={openProfile} />
         <Search onOpenTopic={openTopic} />
         <LevelToggle level={level} setLevel={setLevel} />
