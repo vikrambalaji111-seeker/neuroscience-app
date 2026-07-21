@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "neuroscience-app",
+      "runtimeExecutable": "/Users/vikram-12797/.nvm/versions/node/v24.18.0/bin/node",
+      "runtimeArgs": ["node_modules/vite/bin/vite.js"],
+      "port": 5173
+    },
+    {
+      "name": "neuroscience-api",
+      "runtimeExecutable": "/Users/vikram-12797/.nvm/versions/node/v24.18.0/bin/node",
+      "runtimeArgs": ["server.js"],
+      "cwd": "server",
+      "port": 8787
+    }
+  ]
+}
